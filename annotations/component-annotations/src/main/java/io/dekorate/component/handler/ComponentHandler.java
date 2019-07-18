@@ -23,13 +23,7 @@ import io.dekorate.WithProject;
 import io.dekorate.component.config.ComponentConfig;
 import io.dekorate.component.config.ComponentConfigBuilder;
 import io.dekorate.component.config.EditableComponentConfig;
-import io.dekorate.component.decorator.AddBuildConfigToComponentDecorator;
-import io.dekorate.component.decorator.AddEnvToComponentDecorator;
-import io.dekorate.component.decorator.AddExposedPortToComponentDecorator;
-import io.dekorate.component.decorator.AddRuntimeTypeToComponentDecorator;
-import io.dekorate.component.decorator.AddRuntimeVersionToComponentDecorator;
-import io.dekorate.component.decorator.DeploymentModeDecorator;
-import io.dekorate.component.decorator.ExposeServiceDecorator;
+import io.dekorate.component.decorator.*;
 import io.dekorate.component.model.Component;
 import io.dekorate.component.model.ComponentBuilder;
 import io.dekorate.config.ConfigurationSupplier;
@@ -98,6 +92,9 @@ public class ComponentHandler implements HandlerFactory, Handler<ComponentConfig
     String type = config.getAttribute(RUNTIME_TYPE);
     String version = config.getAttribute(RUNTIME_VERSION);
 
+    Map<String, String> labels = resources.getLabels();
+    labels.put(Labels.APP, config.getName());
+
     if (config.getProject().getScmInfo() != null) {
       String uri = config.getProject().getScmInfo().getUri();
       String branch = config.getProject().getScmInfo().getBranch();
@@ -127,6 +124,7 @@ public class ComponentHandler implements HandlerFactory, Handler<ComponentConfig
       resources.decorateCustom(ResourceGroup.NAME,new AddRuntimeVersionToComponentDecorator(version));
     }
     resources.decorateCustom(ResourceGroup.NAME,new DeploymentModeDecorator(config.getDeploymentMode()));
+    resources.decorateCustom(ResourceGroup.NAME,new MetadataDecorator(config.getName(),labels));
     for (Env env : config.getEnvs()) {
       resources.decorateCustom(ResourceGroup.NAME, new AddEnvToComponentDecorator(env));
     }
@@ -152,12 +150,10 @@ public class ComponentHandler implements HandlerFactory, Handler<ComponentConfig
    * @return The component.
    */
   private Component createComponent(ComponentConfig config) {
-    Map<String, String> labels = resources.getLabels();
-    labels.put(Labels.APP, config.getName());
-    return new ComponentBuilder()
+     return new ComponentBuilder()
       .withNewMetadata()
-      .withName(config.getName())
-      .withLabels(labels)
+      .withName(resources.getName())
+      .withLabels(resources.getLabels())
       .endMetadata()
       .withNewSpec()
       .withDeploymentMode(config.getDeploymentMode())

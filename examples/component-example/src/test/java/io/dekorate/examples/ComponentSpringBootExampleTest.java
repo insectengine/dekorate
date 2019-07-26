@@ -16,7 +16,6 @@
 package io.dekorate.examples;
 
 import io.dekorate.component.model.Component;
-import io.dekorate.component.model.Link;
 import io.dekorate.deps.kubernetes.api.model.HasMetadata;
 import io.dekorate.deps.kubernetes.api.model.KubernetesList;
 import io.dekorate.utils.Serialization;
@@ -26,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ComponentSpringBootExampleTest {
@@ -38,15 +38,9 @@ public class ComponentSpringBootExampleTest {
     Assertions.assertEquals(2, items.size());
     Component component = (Component) items.get(0);
     Assertions.assertEquals("Component", component.getKind());
-    assertEquals("https://github.com/dekorateio/dekorate.git", component.getSpec().getBuildConfig().getUrl());
-    assertEquals("docker", component.getSpec().getBuildConfig().getType());
-    assertEquals("component-example", component.getSpec().getBuildConfig().getModuleDirName());
-    assertNotNull("", component.getSpec().getBuildConfig().getRef());
-    Link link = (Link) items.get(1);
-    Assertions.assertEquals("Link", link.getKind());
-    Assertions.assertEquals(1, link.getSpec().getEnvs().length);
-    Assertions.assertEquals("hello-world", link.getMetadata().getName());
-    Assertions.assertEquals("target", link.getSpec().getComponentName());
+    assertEquals("component-example", component.getMetadata().getName());
+    assertEquals(1, component.getMetadata().getLabels().size());
+    assertNull(component.getSpec().getBuildConfig());
   }
 
 }

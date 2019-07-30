@@ -15,10 +15,14 @@
  */
 package io.dekorate.project;
 
+import io.dekorate.utils.Maps;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.URI;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -52,6 +56,8 @@ class ProjectParseResourceFileTest {
         Project project = new Project(null, new BuildInfo(null, null, null, null, null, tempPath), null );
 
         Map<String, Object> result = project.parseResourceFile(APPLICATION_PROPERTIES);
+      InputStream resource = new FileInputStream("/home/amunozhe/git/dekorate/core/src/test/resources/application.properties");
+      Map<String, Object> stringObjectMap = Maps.fromProperties(resource);
         assertThat(result).containsOnlyKeys("key1", "key2", "k1")
                 .contains(entry("key1", "value1"), entry("key2", "value2"));
         assertThat((Map)result.get("k1")).containsOnly(entry("k2", "v"));
@@ -65,7 +71,8 @@ class ProjectParseResourceFileTest {
         Project project = new Project(null, new BuildInfo(null, null, null, null, null, tempPath),null);
 
         Map<String, Object> result = project.parseResourceFile(APPLICATION_YAML);
-        assertThat(result).containsOnlyKeys("key1", "key2", "k1")
+
+      assertThat(result).containsOnlyKeys("key1", "key2", "k1")
                 .contains(entry("key1", "value1"), entry("key2", "value2"));
         assertThat((Map)result.get("k1")).containsOnly(entry("k2", "v"));
     }

@@ -31,6 +31,13 @@ class MapsTest {
       checkFlattenMap(map);
     }
   }
+ @Test
+  public void testMapFromProperties2() throws Exception {
+    try (InputStream is = MapsTest.class.getClassLoader().getResourceAsStream("application.properties")) {
+      Map<String, Object> map = Maps.fromProperties(is);
+//      checkFlattenMap(map);
+    }
+  }
 
   @Test
   public void testMapFromYAML() throws Exception {

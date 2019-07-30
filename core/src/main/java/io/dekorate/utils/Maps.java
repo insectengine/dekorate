@@ -64,6 +64,11 @@ public class Maps {
         Map<String, Object> kv = asMap(parts, value);
         merge(result, kv);
       }
+      else{
+        Map<String, Object> kv = new HashMap<>();
+        kv.putIfAbsent(k,properties.getProperty(k));
+        merge(result, kv);
+      }
     }
     // Second pass unroll arrays
     unrollArrays(result);

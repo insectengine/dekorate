@@ -15,13 +15,16 @@
  */
 package io.dekorate.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dekorate.DekorateException;
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -98,6 +101,24 @@ public class Maps {
       throw DekorateException.launderThrowable(e);
     }
     return fromProperties(properties.entrySet().stream().collect(Collectors.toMap(e -> String.valueOf(e.getKey()), e -> e.getValue())));
+  }
+
+  public static Map<String, Object> parseResourceFile(InputStream is, String resourceName) {
+    if (resourceName.endsWith(".properties")) {
+      return parse(is, Serialization.propertiesMapper());
+    } else if (resourceName.endsWith(".yaml") || resourceName.endsWith(".yml")) {
+      return parse(is, Serialization.yamlMapper());
+    } else {
+      throw new IllegalArgumentException("resource type is not supported");
+    }
+  }
+
+  private static Map<String, Object> parse(InputStream is, ObjectMapper javaPropsMapper) {
+    try {
+      return javaPropsMapper.readValue(is, new TypeReference<Map<String, Object>>() {});
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**

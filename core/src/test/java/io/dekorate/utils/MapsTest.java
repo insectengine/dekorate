@@ -15,15 +15,26 @@
  */
 package io.dekorate.utils;
 
+import io.dekorate.project.BuildInfoBuilder;
+import io.dekorate.project.Project;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MapsTest {
+  private static final String APPLICATION_PROPERTIES = "application.properties";
+  private static final String APPLICATION_YAML = "application.yaml";
+  private static final String NON_EXISTENT_PROPERTIES = "nonExistent.properties";
 
   @Test
   public void testMapFromProperties() throws Exception {
@@ -101,6 +112,36 @@ class MapsTest {
       } catch (IllegalArgumentException expected) {
       }
     }
+  }
+
+  @Test
+  void missingFile() throws IOException {
+    try (InputStream is = MapsTest.class.getClassLoader().getResourceAsStream(NON_EXISTENT_PROPERTIES)) {
+      Map<String, Object> result = Maps.parseResourceFile(is, NON_EXISTENT_PROPERTIES);
+      fail("should not be executed");
+    }catch (IllegalArgumentException expected){
+
+    }
+
+  }
+
+  @Test
+  void shouldParsePropertiesFile() throws Exception {
+    InputStream is = MapsTest.class.getClassLoader().getResourceAsStream(APPLICATION_PROPERTIES);
+    Map<String, Object> result = Maps.parseResourceFile(is,APPLICATION_PROPERTIES);
+    assertThat(result).containsOnlyKeys("key1", "key2", "k1")
+      .contains(entry("key1", "value1"), entry("key2", "value2"));
+    assertThat((Map)result.get("k1")).containsOnly(entry("k2", "v"));
+  }
+
+  @Test
+  void shouldParseYamlFile() throws Exception {
+    InputStream is = MapsTest.class.getClassLoader().getResourceAsStream(APPLICATION_YAML);
+
+    Map<String, Object> result = Maps.parseResourceFile(is,APPLICATION_YAML);
+    assertThat(result).containsOnlyKeys("key1", "key2", "k1")
+      .contains(entry("key1", "value1"), entry("key2", "value2"));
+    assertThat((Map)result.get("k1")).containsOnly(entry("k2", "v"));
   }
 }
 

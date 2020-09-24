@@ -15,11 +15,14 @@
  */
 package io.dekorate.thorntail;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.dekorate.WithProject;
+import io.dekorate.utils.Maps;
 
 public interface ThorntailConfigHolder extends WithProject {
 
@@ -28,8 +31,15 @@ public interface ThorntailConfigHolder extends WithProject {
   default Map<String, Object> getThorntailConfig() {
     if (thorntailConfig.get() == null) {
       final Map<String, Object> properties = new HashMap<>();
-      properties.putAll(getProject().parseResourceFile("project-defaults.yml"));
+      FileInputStream is = null;
+      try {
+        is = new FileInputStream(getProject().getBuildInfo().getResourceDir().resolve("project-defaults.yml").toFile());
+
+      properties.putAll(Maps.parseResourceFile(is,"project-defaults.yml"));
       thorntailConfig.set(properties);
+      } catch (FileNotFoundException e) {
+        return properties;
+      }
     }
     return thorntailConfig.get();
   }

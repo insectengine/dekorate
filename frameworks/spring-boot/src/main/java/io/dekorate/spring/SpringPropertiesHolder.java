@@ -15,11 +15,14 @@
  */
 package io.dekorate.spring;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.dekorate.WithProject;
+import io.dekorate.utils.Maps;
 
 public interface SpringPropertiesHolder extends WithProject {
 
@@ -28,10 +31,19 @@ public interface SpringPropertiesHolder extends WithProject {
   default Map<String, Object> getSpringProperties() {
     if (springProperties.get() == null) {
       final Map<String, Object> properties = new HashMap<>();
-      properties.putAll(getProject().parseResourceFile("application.properties"));
-      properties.putAll(getProject().parseResourceFile("application.yaml"));
-      properties.putAll(getProject().parseResourceFile("application.yml"));
+      FileInputStream fileInputStream = null;
+      try {
+        fileInputStream = new FileInputStream(getProject().getBuildInfo().getResourceDir().resolve("application.properties").toFile());
+
+      properties.putAll(Maps.parseResourceFile(fileInputStream,"application.properties"));
+      FileInputStream fileInputStreamYaml = new FileInputStream(getProject().getBuildInfo().getResourceDir().resolve("application.yaml").toFile());
+      properties.putAll(Maps.parseResourceFile(fileInputStreamYaml,"application.yaml"));
+      FileInputStream fileInputStreamYml = new FileInputStream(getProject().getBuildInfo().getResourceDir().resolve("application.yml").toFile());
+      properties.putAll(Maps.parseResourceFile(fileInputStreamYaml,"application.yml"));
       springProperties.set(properties);
+      } catch (FileNotFoundException e) {
+        return properties;
+      }
     }
     return springProperties.get();
   }

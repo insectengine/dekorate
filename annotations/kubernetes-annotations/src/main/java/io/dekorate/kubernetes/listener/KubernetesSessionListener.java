@@ -24,17 +24,19 @@ import java.util.Optional;
 import io.dekorate.BuildService;
 import io.dekorate.BuildServiceFactories;
 import io.dekorate.DekorateException;
+import io.dekorate.LoadService;
+import io.dekorate.LoadServiceFactories;
 import io.dekorate.ResourceRegistry;
 import io.dekorate.Session;
 import io.dekorate.SessionListener;
 import io.dekorate.WithProject;
 import io.dekorate.WithSession;
 import io.dekorate.hook.ImageBuildHook;
+import io.dekorate.hook.ImageLoadHook;
 import io.dekorate.hook.ImagePushHook;
 import io.dekorate.hook.OrderedHook;
 import io.dekorate.hook.ProjectHook;
 import io.dekorate.hook.ResourcesApplyHook;
-import io.dekorate.kind.hook.KindImageAutoloadHook;
 import io.dekorate.kubernetes.config.ImageConfiguration;
 import io.dekorate.kubernetes.config.KubernetesConfig;
 import io.dekorate.kubernetes.hook.ScaleDeploymentHook;
@@ -51,7 +53,7 @@ public class KubernetesSessionListener implements SessionListener, WithProject, 
     Project project = getProject();
     Optional<KubernetesConfig> optionalAppConfig = session.getConfigurationRegistry().get(KubernetesConfig.class);
     Optional<ImageConfiguration> optionalImageConfig = session.getConfigurationRegistry()
-        .getImageConfig(BuildServiceFactories.supplierMatches(project));
+        .getImageConfig(LoadServiceFactories.supplierMatches(project));
     if (!optionalAppConfig.isPresent() || !optionalImageConfig.isPresent()) {
       return;
     }
@@ -63,7 +65,7 @@ public class KubernetesSessionListener implements SessionListener, WithProject, 
     BuildService buildService = null;
     ImageConfiguration imageConfig = optionalImageConfig.get();
     if (imageConfig.isAutoBuildEnabled() || imageConfig.isAutoPushEnabled() || kubernetesConfig.isAutoDeployEnabled()
-        || kubernetesConfig.isAutoLoadEnabled()) {
+        || imageConfig.isAutoLoadEnabled()) {
 
       try {
         buildService = optionalImageConfig.map(BuildServiceFactories.create(getProject(), generated.getItems()))
@@ -87,11 +89,19 @@ public class KubernetesSessionListener implements SessionListener, WithProject, 
       hooks.add(new ImageBuildHook(getProject(), buildService));
       hooks.add(new ImagePushHook(getProject(), buildService));
     } else if (imageConfig.isAutoBuildEnabled() || kubernetesConfig.isAutoDeployEnabled()
-        || kubernetesConfig.isAutoLoadEnabled()) {
+        || imageConfig.isAutoLoadEnabled()) {
       hooks.add(new ImageBuildHook(getProject(), buildService));
     }
-    if (kubernetesConfig.isAutoLoadEnabled()) {
-      hooks.add(new KindImageAutoloadHook(getProject(), imageConfig.getImage()));
+    if (imageConfig.isAutoLoadEnabled()) {
+      try {
+        LoadService loadService = optionalImageConfig.map(LoadServiceFactories.create(getProject(), generated.getItems()))
+            .orElseThrow(() -> new IllegalStateException("No applicable LoadServiceFactory found."));
+        hooks.add(new ImageLoadHook(getProject(), loadService));
+      } catch (Exception e) {
+        BuildServiceFactories.log(project, session.getConfigurationRegistry().getAll(ImageConfiguration.class));
+        throw DekorateException.launderThrowable("Failed to lookup BuildService.", e);
+      }
+
     }
 
     if (kubernetesConfig.isAutoDeployEnabled()) {

@@ -254,6 +254,7 @@ public class KubernetesManifestGenerator extends AbstractKubernetesManifestGener
         .withDockerFile(imageConfig.getDockerFile() != null ? imageConfig.getDockerFile() : "Dockerfile")
         .withAutoBuildEnabled(imageConfig.isAutoBuildEnabled() ? imageConfig.isAutoBuildEnabled() : false)
         .withAutoPushEnabled(imageConfig.isAutoPushEnabled() ? imageConfig.isAutoPushEnabled() : false)
+        .withAutoLoadEnabled(imageConfig.isAutoLoadEnabled() ? imageConfig.isAutoLoadEnabled() : false)
         .build();
   }
 }

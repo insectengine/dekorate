@@ -15,14 +15,13 @@
  * 
 **/
 
-package io.dekorate.kind.config;
+package io.dekorate;
 
-import io.dekorate.ConfigurationGeneratorFactory;
-import io.dekorate.ConfigurationRegistry;
+public interface LoadService {
 
-public class DefaultKindConfigGeneratorFactory implements ConfigurationGeneratorFactory {
-
-  public DefaultKindLoadConfigGenerator create(ConfigurationRegistry configurationRegistry) {
-    return new DefaultKindLoadConfigGenerator(configurationRegistry);
+  default void prepare() {
   }
+
+  void load();
+
 }

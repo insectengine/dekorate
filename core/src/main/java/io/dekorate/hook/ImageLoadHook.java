@@ -15,14 +15,32 @@
  * 
 **/
 
-package io.dekorate.kind.config;
+package io.dekorate.hook;
 
-import io.dekorate.ConfigurationGeneratorFactory;
-import io.dekorate.ConfigurationRegistry;
+import io.dekorate.LoadService;
+import io.dekorate.project.Project;
 
-public class DefaultKindConfigGeneratorFactory implements ConfigurationGeneratorFactory {
+public class ImageLoadHook extends ProjectHook {
 
-  public DefaultKindLoadConfigGenerator create(ConfigurationRegistry configurationRegistry) {
-    return new DefaultKindLoadConfigGenerator(configurationRegistry);
+  private final LoadService load;
+
+  public ImageLoadHook(Project project, LoadService load) {
+    super(project);
+    this.load = load;
   }
+
+  @Override
+  public void init() {
+  }
+
+  @Override
+  public void warmup() {
+    load.prepare();
+  }
+
+  @Override
+  public void run() {
+    load.load();
+  }
+
 }

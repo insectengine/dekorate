@@ -19,14 +19,14 @@ import io.dekorate.ConfigurationRegistry;
 import io.dekorate.config.DefaultConfiguration;
 import io.dekorate.kind.configurator.ApplyKindImageAutoloadConfiguration;
 
-public class DefaultKindConfigGenerator implements KindConfigGenerator {
+public class DefaultKindLoadConfigGenerator implements KindLoadConfigGenerator {
 
   private final ConfigurationRegistry configurationRegistry;
 
-  public DefaultKindConfigGenerator(ConfigurationRegistry configurationRegistry) {
+  public DefaultKindLoadConfigGenerator(ConfigurationRegistry configurationRegistry) {
     this.configurationRegistry = configurationRegistry;
     this.configurationRegistry.add(new ApplyKindImageAutoloadConfiguration());
-    add(new DefaultConfiguration<KindConfig>(KindConfig.newKindConfigBuilderFromDefaults()));
+    add(new DefaultConfiguration<KindLoadConfig>(KindLoadConfig.newKindLoadConfigBuilderFromDefaults()));
   }
 
   @Override
